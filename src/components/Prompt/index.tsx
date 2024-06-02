@@ -4,7 +4,6 @@ import { ClientPromptForm } from "./Client";
 import { cookies } from "next/headers";
 import OpenAI from "openai";
 import { randomUUID } from "crypto";
-import { S3 } from "aws-sdk";
 import { ImageGenerateParams } from "openai/resources/images.mjs";
 import Link from "next/link";
 
@@ -57,51 +56,19 @@ const action = async (data: FormData) => {
       style,
     });
 
-    const url = res?.data?.[0]?.url;
-
-    if (url) {
-      const sourceImage = await fetch(url);
-      const sourceImageBuffer = await sourceImage.arrayBuffer();
-      const params = {
-        Bucket: process.env.R2_PHOTO_BUCKET!,
-        Key: `${randomUUID()}.png`,
-        Body: Buffer.from(sourceImageBuffer),
-        ContentType: "image/png",
-        ACL: "public-read",
-      };
-
-      const r2 = new S3({
-        accessKeyId: process.env.R2_ACCESS_KEY_ID,
-        secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
-        endpoint: process.env.R2_ENDPOINT,
-        s3ForcePathStyle: true, // Required for R2 compatibility
-        signatureVersion: "v4",
-        sslEnabled: true,
-        region: "auto",
-      });
-
-      const result: any = await new Promise((resolve, reject) => {
-        r2.upload(params, (err: Error, data: any) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(data);
-          }
-        });
-      });
-
-      console.log(result);
-
-      imageUrl = result?.Key;
-    } else {
-      throw new Error("No image URL returned");
+    if (!res.data || !res.data[0].url) {
+      throw new Error("No image generated");
     }
+    console.log(res);
+    res.data.forEach((image) => {
+      imageUrl = encodeURIComponent(image.url ?? "");
+    });
   } catch (error: any) {
     return redirect(`/error?message=${encodeURIComponent(error.message)}`);
   }
 
   return redirect(
-    `/done?imageUrl=https://dalle.static.donley.xyz/${imageUrl}&resolution=${resolution}&style=${style}&quality=${quality}`
+    `/done?imageUrl=${imageUrl}&resolution=${resolution}&style=${style}&quality=${quality}`
   );
 };
 

@@ -4,7 +4,7 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "dalle.static.donley.xyz",
+        hostname: "oaidalleapiprodscus.blob.core.windows.net",
       },
     ],
   },

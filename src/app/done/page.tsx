@@ -67,6 +67,7 @@ export default function RedeemPage({
           <a
             href={downloadUrl}
             download
+            target="_blank"
             className="whitespace-nowrap bg-[rgba(0,0,0,0.5)] p-2 rounded-lg hover:bg-[rgba(0,0,0,0.7)]"
           >
             Download
